@@ -315,7 +315,6 @@ body{
   background: rgba(255,255,255,0.03);
   border: 1px solid var(--stroke);
   border-radius: 16px;
-  overflow: hidden;
   display:flex;
   flex-direction:column;
 
@@ -368,6 +367,7 @@ body{
 /* Wrapper so we can position "Jump to latest" without overlaying composer */
 .chat-body-wrap{
   position: relative;
+  overflow: hidden;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
