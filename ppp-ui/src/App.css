@@ -368,24 +368,24 @@ body{
   flex: 1 1 auto;
   min-height: 0;
   overflow: hidden;
+  display: block;
 }
 
-
 .chat-body{
-  padding: 16px;
-  display:flex;
-  flex-direction:column;
-  gap: 10px;
-
-  overflow:auto;
-  flex: 1 1 auto;
+  height: 100%;       /* ✅ ensures it fills chat-body-wrap */
+  overflow-y: auto;   /* ✅ explicit vertical scrolling */
   min-height: 0;
 
-  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 
-  /* ✅ more room above composer */
-  padding-bottom: calc(16px + var(--composer-height, 84px) + env(safe-area-inset-bottom));
+  /* keep your padding-bottom */
+  padding-bottom: calc(
+    16px + var(--composer-height, 84px) + env(safe-area-inset-bottom)
+  );
+
+  /* helps touch scrolling on mobile */
+  touch-action: pan-y;
 }
 .chat-end{
   height: 1px;
