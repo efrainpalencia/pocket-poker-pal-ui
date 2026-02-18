@@ -18,41 +18,49 @@ export default function MessageList({ messages }: { messages: ChatMessage[] }) {
   const [isNearBottom, setIsNearBottom] = useState(true);
   const [unread, setUnread] = useState(0);
 
-  // Track scroll position + near-bottom state
+  // Track scroll position + near-bottom state (also on resize for mobile keyboard)
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
 
-    const onScroll = () => {
+    const compute = () => {
       const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
       const near = distance < NEAR_BOTTOM_PX;
       setIsNearBottom(near);
-
-      // If user returns near bottom, clear unread
       if (near) setUnread(0);
     };
 
+    const onScroll = () => compute();
+
     el.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => el.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", compute);
+    compute();
+
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", compute);
+    };
   }, []);
 
-  // On new messages:
-  // - if near bottom → auto scroll
-  // - if not near bottom → increment unread
+  // Auto-scroll only when appropriate; do it instantly to avoid "overlap/jank"
+  const prevLenRef = useRef(messages.length);
   useEffect(() => {
+    const prevLen = prevLenRef.current;
+    prevLenRef.current = messages.length;
+
+    if (messages.length <= prevLen) return; // only on new message
+
     if (isNearBottom) {
-      endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      endRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
     } else {
       setUnread((n) => n + 1);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages.length]);
+  }, [messages.length, isNearBottom]);
 
   function jumpToLatest() {
     const el = scrollerRef.current;
     if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" }); // user-initiated
     setUnread(0);
   }
 
@@ -68,7 +76,7 @@ export default function MessageList({ messages }: { messages: ChatMessage[] }) {
         {messages.map((m) => (
           <MessageBubble key={m.id} msg={m} />
         ))}
-        <div ref={endRef} />
+        <div ref={endRef} className="chat-end" />
       </div>
 
       {!isNearBottom && (

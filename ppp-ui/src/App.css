@@ -12,6 +12,7 @@
   --glass: rgba(255,255,255,0.04);
   --radius: 12px;
   --max-width: 1200px;
+  --composer-height: 160px;
 
   /* App spacing */
   --page-pad: 2rem;
@@ -80,7 +81,7 @@ body{
   position: relative;
   isolation: isolate;
 
-  min-height: 100vh;
+  min-height: 100dvh;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: var(--page-pad);
@@ -92,7 +93,9 @@ body{
 .layout-main{
   padding-top: 0.5rem;
   flex: 1 1 auto;
-  min-height: 0; /* important for nested scroll areas */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* =========================
@@ -320,7 +323,7 @@ body{
   min-height: 0;
 
   /* desktop-ish default size */
-  height: min(70vh, 760px);
+  height: 100%;
 }
 
 .chat-header{
@@ -367,6 +370,7 @@ body{
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
+  display: flex;
 }
 
 .chat-body{
@@ -374,16 +378,20 @@ body{
   display:flex;
   flex-direction:column;
   gap: 10px;
+
   overflow:auto;
   flex: 1 1 auto;
   min-height: 0;
 
-  /* mobile scroll feel */
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
 
-  /* keeps scroll from jumping when address bar changes */
-  scroll-behavior: smooth;
+  /* ✅ more room above composer */
+  padding-bottom: calc(16px + var(--composer-height, 84px) + env(safe-area-inset-bottom));
+}
+.chat-end{
+  height: 1px;
+  scroll-margin-bottom: calc(var(--composer-height, 84px) + env(safe-area-inset-bottom) + 24px);
 }
 
 .jump-latest{
@@ -399,12 +407,15 @@ body{
   cursor: pointer;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
+  bottom: calc(18px + 72px + env(safe-area-inset-bottom));
 }
 
 /* Bubbles */
 .bubble{
+  display: block;
   max-width: 78%;
   padding: 10px 12px;
+  margin-bottom: 4px;
   border-radius: 14px;
   line-height: 1.35;
   border: 1px solid var(--stroke);
@@ -415,23 +426,27 @@ body{
 .bubble-assistant{ align-self: flex-start; background: rgba(246,160,122,0.08); }
 .bubble-system{ align-self: center; background: rgba(255,255,255,0.03); color: var(--muted); font-size: 0.92rem; }
 .bubble-error{ align-self: center; background: rgba(255,0,0,0.08); border-color: rgba(255,0,0,0.18); }
+.bubble-text{white-space: pre-wrap;overflow-wrap: anywhere;word-break: break-word;}
 
 /* Composer pinned for app-like feel */
 .chat-composer{
   display:flex;
+  flex: 0 0 auto;
   gap: 10px;
   padding: 12px;
   border-top: 1px solid var(--divider);
 
-  position: sticky;
-  bottom: 0;
-
-  background: rgba(255,255,255,0.02);
+  background: linear-gradient(
+    to top,
+    rgba(255,255,255,0.02),
+    rgba(255,255,255,0.00)
+  );
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 
   padding-bottom: calc(12px + env(safe-area-inset-bottom));
 }
+
 
 /* Textarea (works with Shift+Enter) */
 .chat-input{
@@ -455,6 +470,11 @@ body{
 }
 
 .chat-input:disabled{ opacity: 0.6; }
+.chat-screen{
+  flex: 1 1 auto;
+  min-height: 0; /* CRITICAL so inner scrolling works */
+  display: flex;
+}
 
 .chat-send{
   border: 0;
@@ -527,6 +547,8 @@ body{
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 20px;
+  max-width: max-content;
 }
 
 .thinking-label{
@@ -600,6 +622,7 @@ body{
 
   .bubble-system{ background: rgba(2,6,23,0.03); }
 
+
   /* sticky composer background should look light too */
   .chat-composer{
     background: rgba(255,255,255,0.65);
@@ -645,8 +668,10 @@ body{
   }
 
   .chat-card{
-    height: calc(var(--vvh, 100dvh) - 110px);
+    display: flex;
+    flex-direction: column;
     min-height: 0;
+    height: 100%;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { chatService } from "@/services/chatService";
 import type { QAOut, InterruptPrompt } from "@/types/chat";
 import MessageList, { type ChatMessage } from "./MessageList";
@@ -23,17 +23,18 @@ function initialMessages(): ChatMessage[] {
 export default function ChatShell() {
   const [threadId, setThreadId] = useState<string | null>(null);
   const [threadToken, setThreadToken] = useState<string | null>(null);
-
   const [pendingPrompt, setPendingPrompt] = useState<InterruptPrompt | null>(
     null,
   );
   const [loading, setLoading] = useState(false);
-
   const [messages, setMessages] = useState<ChatMessage[]>(() =>
     initialMessages(),
   );
 
   const canSend = useMemo(() => !loading, [loading]);
+
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const composerWrapRef = useRef<HTMLDivElement | null>(null);
 
   function push(
     role: ChatMessage["role"],
@@ -77,7 +78,6 @@ export default function ChatShell() {
 
       setPendingPrompt(prompt);
 
-      // Show the prompt as an assistant message (nice UX)
       if ((prompt as any).message)
         push("assistant", String((prompt as any).message));
 
@@ -94,7 +94,6 @@ export default function ChatShell() {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    // If we have a pending interrupt, user text should resume the graph.
     if (pendingPrompt && threadId && threadToken) {
       push("user", trimmed);
 
@@ -120,7 +119,6 @@ export default function ChatShell() {
       return;
     }
 
-    // Otherwise this is a normal ask
     push("user", trimmed);
 
     try {
@@ -129,7 +127,7 @@ export default function ChatShell() {
 
       const out = await chatService.ask({
         question: trimmed,
-        thread_id: threadId, // keep continuity within the same chat session
+        thread_id: threadId,
       });
 
       removeThinking();
@@ -143,7 +141,6 @@ export default function ChatShell() {
   }
 
   function handleClearChat() {
-    // Reset UI + thread continuity
     setLoading(false);
     setPendingPrompt(null);
     setThreadId(null);
@@ -151,6 +148,7 @@ export default function ChatShell() {
     setMessages(initialMessages());
   }
 
+  // ✅ keyboard-safe viewport height
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
@@ -168,9 +166,28 @@ export default function ChatShell() {
     };
   }, []);
 
+  // ✅ measure composer height and store as CSS var
+  useEffect(() => {
+    const card = cardRef.current;
+    const composer = composerWrapRef.current;
+    if (!card || !composer) return;
+
+    const apply = () => {
+      const h = Math.ceil(composer.getBoundingClientRect().height);
+      card.style.setProperty("--composer-height", `${h}px`);
+    };
+
+    apply();
+
+    const ro = new ResizeObserver(apply);
+    ro.observe(composer);
+
+    return () => ro.disconnect();
+  }, []);
+
   return (
     <div className="chat-page">
-      <div className="chat-card">
+      <div ref={cardRef} className="chat-card">
         <div className="chat-header">
           <div className="chat-title">Pocket Poker Pal</div>
           <div className="chat-sub">
@@ -187,6 +204,7 @@ export default function ChatShell() {
           </button>
         </div>
 
+        {/* ✅ MessageList owns the scroll container */}
         <MessageList messages={messages} />
 
         {pendingPrompt && (
@@ -196,12 +214,15 @@ export default function ChatShell() {
           />
         )}
 
-        <MessageComposer
-          disabled={!canSend}
-          placeholder="Ask a poker rules question…"
-          onSend={handleSendUserText}
-          loading={loading}
-        />
+        {/* ✅ Wrap composer so we can measure it */}
+        <div ref={composerWrapRef}>
+          <MessageComposer
+            disabled={!canSend}
+            placeholder="Ask a poker rules question…"
+            onSend={handleSendUserText}
+            loading={loading}
+          />
+        </div>
       </div>
     </div>
   );

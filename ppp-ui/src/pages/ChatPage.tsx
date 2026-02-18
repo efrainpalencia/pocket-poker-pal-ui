@@ -1,5 +1,9 @@
 import ChatShell from "@/components/chat/ChatShell";
 
 export default function ChatPage() {
-  return <ChatShell />;
+  return (
+    <div className="chat-screen">
+      <ChatShell />
+    </div>
+  );
 }
