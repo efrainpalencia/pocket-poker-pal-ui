@@ -308,6 +308,7 @@ body{
   display:flex;
   justify-content:center;
   padding: 1.5rem 0;
+  min-height: 0;
 }
 
 .chat-card{
@@ -317,12 +318,10 @@ body{
   border-radius: 16px;
   display:flex;
   flex-direction:column;
-
-  /* critical for inner scroll areas in flex layouts */
   min-height: 0;
 
-  /* desktop-ish default size */
-  height: 100%;
+  /* ✅ desktop */
+  height: min(70vh, 760px);
 }
 
 .chat-header{
@@ -366,12 +365,11 @@ body{
 
 /* Wrapper so we can position "Jump to latest" without overlaying composer */
 .chat-body-wrap{
-  position: relative;
-  overflow: hidden;
   flex: 1 1 auto;
   min-height: 0;
-  display: flex;
+  overflow: hidden;
 }
+
 
 .chat-body{
   padding: 16px;
@@ -668,10 +666,7 @@ body{
   }
 
   .chat-card{
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
+    height: calc(var(--vvh, 100dvh) - 110px); /* header/nav offset */
   }
 }
 
