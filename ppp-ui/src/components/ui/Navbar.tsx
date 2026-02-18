@@ -1,18 +1,28 @@
 import { useEffect, useId, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import logo from "../../assets/ppp-logo2.png";
+import { Link, useLocation } from "react-router-dom";
+import logoDark from "../../assets/ppp-logo-dark.svg";
+import logoLight from "../../assets/ppp-logo-light.svg";
 import Button from "./Button";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
-  const navId = useId(); // unique id for aria-controls
+  const reactId = useId();
+  const navId = `mobile-menu-${reactId.replace(/:/g, "")}`;
   const menuRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
 
+  const location = useLocation();
+
   const close = () => setOpen(false);
   const toggle = () => setOpen((s) => !s);
+
+  // Close menu on route change (mobile UX win)
+  useEffect(() => {
+    if (open) close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   // Lock background scroll + manage focus on open/close
   useEffect(() => {
@@ -20,11 +30,9 @@ export default function Navbar() {
 
     previouslyFocusedRef.current = document.activeElement as HTMLElement;
 
-    // lock scroll
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    // focus first focusable element inside menu
     const focusFirst = () => {
       const root = menuRef.current;
       if (!root) return;
@@ -32,16 +40,15 @@ export default function Navbar() {
       (focusables[0] ?? root).focus();
     };
 
-    // delay ensures elements exist
     const t = window.setTimeout(focusFirst, 0);
 
     return () => {
       window.clearTimeout(t);
       document.body.style.overflow = prevOverflow;
 
-      // restore focus to the hamburger (or previously focused element)
+      // Restore focus to the hamburger
       buttonRef.current?.focus();
-      // Alternatively:
+      // Or restore previous:
       // previouslyFocusedRef.current?.focus();
     };
   }, [open]);
@@ -70,16 +77,38 @@ export default function Navbar() {
   return (
     <header className="nav">
       <div className="nav-inner">
-        <div className="brand-container">
-          <img src={logo} alt="Pocket Poker Pal" className="logo" />
+        <Link
+          to="/"
+          className="brand-container"
+          aria-label="Pocket Poker Pal home"
+        >
+          <picture>
+            <source srcSet={logoDark} media="(prefers-color-scheme: dark)" />
+            <img src={logoLight} alt="Pocket Poker Pal" className="logo" />
+          </picture>
           <div className="brand">Pocket Poker Pal</div>
-        </div>
+        </Link>
 
-        {/* Desktop nav (always available) */}
+        {/* Desktop nav */}
         <nav className="nav-links desktop" aria-label="Primary">
-          <Link to="/">Home</Link>
-          <Link to="/chat">Chat</Link>
-          <Link to="/about">About</Link>
+          <Link
+            to="/"
+            className={isActive(location.pathname, "/") ? "active" : ""}
+          >
+            Home
+          </Link>
+          <Link
+            to="/chat"
+            className={isActive(location.pathname, "/chat") ? "active" : ""}
+          >
+            Chat
+          </Link>
+          <Link
+            to="/about"
+            className={isActive(location.pathname, "/about") ? "active" : ""}
+          >
+            About
+          </Link>
         </nav>
 
         <div className="nav-actions desktop">
@@ -88,7 +117,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Hamburger */}
+        {/* Hamburger (also serves as Close button when open) */}
         <button
           ref={buttonRef}
           type="button"
@@ -105,63 +134,75 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile menu as a dialog */}
-      {open && (
+      {/* Mobile menu */}
+      <div
+        className="mobile-overlay"
+        hidden={!open}
+        aria-hidden={!open}
+        role="presentation"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) close();
+        }}
+      >
         <div
-          className="mobile-overlay"
-          role="presentation"
-          onMouseDown={(e) => {
-            // close only if clicking the backdrop (not the panel)
-            if (e.target === e.currentTarget) close();
-          }}
+          id={navId}
+          ref={menuRef}
+          className="mobile-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Primary menu"
+          tabIndex={-1}
         >
-          <div
-            id={navId}
-            ref={menuRef}
-            className="mobile-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Primary menu"
-            tabIndex={-1}
-          >
-            <div className="mobile-header">
+          {/* inside the mobile-panel */}
+          <div className="mobile-title-row">
+            <div>
               <div className="mobile-title">Menu</div>
-              <button
-                type="button"
-                className="mobile-close"
-                onClick={close}
-                aria-label="Close menu"
-              >
-                ×
-              </button>
+              <div className="mobile-sub">Navigate Pocket Poker Pal</div>
             </div>
 
-            <nav className="mobile-nav" aria-label="Primary">
-              <Link to="/" onClick={close}>
-                Home
-              </Link>
-              <Link to="/chat" onClick={close}>
-                Chat
-              </Link>
-              <Link to="/about" onClick={close}>
-                About
-              </Link>
-            </nav>
-
-            <div className="mobile-actions">
-              <Link to="/chat" onClick={close}>
-                <Button>Get Started</Button>
-              </Link>
-            </div>
+            <button
+              type="button"
+              className="mobile-x"
+              aria-label="Close menu"
+              onClick={close}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
           </div>
+
+          <nav className="mobile-nav" aria-label="Primary">
+            <Link to="/" className="mobile-item">
+              Home
+            </Link>
+            <Link to="/chat" className="mobile-item">
+              Chat
+            </Link>
+            <Link to="/about" className="mobile-item">
+              About
+            </Link>
+          </nav>
+
+          <div className="mobile-actions">
+            <Link to="/chat">
+              <Button>Get Started</Button>
+            </Link>
+          </div>
+          {/* Screen-reader hint */}
+          <p className="sr-only" aria-live="polite">
+            Press Escape to close the menu.
+          </p>
         </div>
-      )}
+      </div>
     </header>
   );
 }
 
-/** Focus helpers */
+function isActive(pathname: string, to: string) {
+  if (to === "/") return pathname === "/";
+  return pathname.startsWith(to);
+}
 
+/** Focus helpers */
 function getFocusable(root: HTMLElement): HTMLElement[] {
   const selectors = [
     "a[href]",

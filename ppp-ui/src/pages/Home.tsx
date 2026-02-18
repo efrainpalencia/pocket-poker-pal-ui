@@ -10,7 +10,7 @@ export default function Home() {
   };
 
   const goToAboutPage = () => {
-    navigate("/chat");
+    navigate("/about");
   };
 
   return (
@@ -56,7 +56,10 @@ export default function Home() {
         </div>
         <div className="feature">
           <h3>Search by topic</h3>
-          <p>Find answers across rules, procedures, and tournament play.</p>
+          <p>
+            Find answers across cash-game rules, procedures, and tournament
+            play.
+          </p>
         </div>
       </section>
     </>

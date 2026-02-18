@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { chatService } from "@/services/chatService";
 import type { QAOut, InterruptPrompt } from "@/types/chat";
 import MessageList, { type ChatMessage } from "./MessageList";
@@ -150,6 +150,23 @@ export default function ChatShell() {
     setThreadToken(null);
     setMessages(initialMessages());
   }
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const setVVH = () => {
+      document.documentElement.style.setProperty("--vvh", `${vv.height}px`);
+    };
+
+    setVVH();
+    vv.addEventListener("resize", setVVH);
+    vv.addEventListener("scroll", setVVH);
+    return () => {
+      vv.removeEventListener("resize", setVVH);
+      vv.removeEventListener("scroll", setVVH);
+    };
+  }, []);
 
   return (
     <div className="chat-page">
