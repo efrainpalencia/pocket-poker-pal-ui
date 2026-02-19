@@ -15,6 +15,8 @@ export default defineConfig({
         "apple-touch-icon.png",
         "safari-pinned-tab.svg",
         "browserconfig.xml",
+        "maskable-192x192.png",
+        "maskable-512x512.png",
       ],
 
       manifest: {
