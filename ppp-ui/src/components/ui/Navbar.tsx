@@ -109,6 +109,12 @@ export default function Navbar() {
           >
             About
           </Link>
+          <Link
+            to="/install"
+            className={isActive(location.pathname, "/install") ? "active" : ""}
+          >
+            Install
+          </Link>
         </nav>
 
         <div className="nav-actions desktop">
@@ -179,6 +185,9 @@ export default function Navbar() {
             </Link>
             <Link to="/about" className="mobile-item">
               About
+            </Link>
+            <Link to="/install" className="mobile-item">
+              Install
             </Link>
           </nav>
 

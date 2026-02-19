@@ -66,6 +66,10 @@ body{
     background: linear-gradient(180deg,#e6eef6 0%, #e6eef6 100%);
     color:#071022;
   }
+  .pwa-popover{
+    background: rgba(230,238,246,0.98);
+    border-color: var(--stroke);
+  }
 }
 
 /* Better default focus */
@@ -309,6 +313,7 @@ body{
   justify-content:center;
   padding: 1.5rem 0;
   min-height: 0;
+  width: 100%;
 }
 
 .chat-card{
@@ -666,7 +671,19 @@ body{
   }
 
   .chat-card{
-    height: calc(var(--vvh, 100dvh) - 110px); /* header/nav offset */
+    height: calc(var(--vvh, 100dvh) - 110px);
+  }
+}
+
+@media (min-width: 1200px){
+  .chat-card{
+    max-width: 1100px;
+  }
+}
+
+@media (min-width: 1600px){
+  .chat-card{
+    max-width: 1300px;
   }
 }
 
@@ -797,3 +814,65 @@ body{
   white-space:nowrap;
   border:0;
 }
+
+/* PWA popover */
+.pwa-popover{
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 260px;
+
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+
+  background: rgba(15, 23, 36, 0.95);
+  padding: 12px;
+
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  z-index: 50;
+}
+
+.pwa-popover-title{
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.pwa-popover-body{
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.pwa-popover-actions{
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pwa-popover-btn{
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,0.06);
+  color: inherit;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pwa-popover-btn:hover{
+  background: rgba(255,255,255,0.10);
+}
+
+@media (prefers-color-scheme: light){
+  .pwa-popover{
+    background: rgba(230,238,246,0.98);
+    box-shadow: 0 10px 24px rgba(2,6,23,0.18);
+  }
+  .pwa-popover-btn{
+    background: rgba(2,6,23,0.04);
+  }
+  .pwa-popover-btn:hover{
+    background: rgba(2,6,23,0.07);
+  }
+}
+
